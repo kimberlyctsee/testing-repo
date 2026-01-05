@@ -3,47 +3,370 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feline Friends - Cat Catalogue</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>Spin The Wheel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #ff9a9e 0%, #a8e063 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 600px;
+            padding: 40px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            margin: 30px auto;
+        }
+
+        .wheel-wrapper {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+            transform-origin: center;
+        }
+
+        .pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 25px solid transparent;
+            border-right: 25px solid transparent;
+            border-top: 50px solid #333;
+            z-index: 100;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .controls {
+            margin-top: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        #optionsInput {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        #optionsInput:focus {
+            border-color: #ff9a9e;
+        }
+
+        .options-hint {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        #spinButton {
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #ff9a9e 0%, #a8e063 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        #spinButton:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 154, 158, 0.5);
+        }
+
+        #spinButton:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        #spinButton:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            min-height: 60px;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-text {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .result-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 600px) {
+            .wheel-container {
+                width: 300px;
+                height: 300px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
 </head>
 <body>
-    <header class="header">
-        <div class="container">
-            <h1 class="logo">🐱 Feline Friends</h1>
-            <p class="tagline">Discover Your Perfect Cat Companion</p>
-        </div>
-    </header>
+    <div class="container">
+        <h1>🎰 Spin The Wheel</h1>
+        <p class="subtitle">Add your options and let fate decide!</p>
 
-    <main class="main">
-        <div class="container">
-            <div class="filter-section">
-                <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="Search cats by breed or name...">
-                </div>
-                <div class="filter-tags">
-                    <button class="filter-btn active" data-filter="all">All</button>
-                    <button class="filter-btn" data-filter="short-hair">Short Hair</button>
-                    <button class="filter-btn" data-filter="long-hair">Long Hair</button>
-                    <button class="filter-btn" data-filter="hypoallergenic">Hypoallergenic</button>
-                    <button class="filter-btn" data-filter="playful">Playful</button>
-                </div>
-            </div>
-
-            <div id="catalogue" class="catalogue-grid">
-                <!-- Cat cards will be inserted here by JavaScript -->
+        <div class="wheel-container">
+            <div class="pointer"></div>
+            <div class="wheel-wrapper" id="wheelWrapper">
+                <canvas id="wheelCanvas"></canvas>
             </div>
         </div>
-    </main>
 
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; 2024 Feline Friends. All cats deserve loving homes.</p>
+        <div class="controls">
+            <div class="input-group">
+                <label for="optionsInput">Enter options (comma-separated):</label>
+                <input 
+                    type="text" 
+                    id="optionsInput" 
+                    placeholder="Option 1, Option 2, Option 3..."
+                    value="Pizza, Pasta, Sushi, Burger, Salad, Tacos"
+                >
+                <div class="options-hint">Separate each option with a comma</div>
+            </div>
+            <button id="spinButton">SPIN! 🎡</button>
         </div>
-    </footer>
 
-    <script src="script.js"></script>
+        <div class="result" id="result">
+            <div class="result-label">Result:</div>
+            <div class="result-text" id="resultText"></div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+        const wheelWrapper = document.getElementById('wheelWrapper');
+        const optionsInput = document.getElementById('optionsInput');
+        const spinButton = document.getElementById('spinButton');
+        const result = document.getElementById('result');
+        const resultText = document.getElementById('resultText');
+
+        let options = [];
+        let isSpinning = false;
+        let currentRotation = 0;
+        let colors = [
+            '#000000', '#1e3a8a', '#000000', '#1e3a8a',
+            '#000000', '#1e3a8a', '#000000', '#1e3a8a',
+            '#000000', '#1e3a8a', '#000000', '#1e3a8a'
+        ];
+
+        // Set canvas size
+        function setCanvasSize() {
+            const size = 400;
+            canvas.width = size;
+            canvas.height = size;
+            if (options.length > 0) {
+                drawWheel();
+            }
+        }
+
+        setCanvasSize();
+
+        // Draw wheel
+        function drawWheel() {
+            if (options.length === 0) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                return;
+            }
+
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = centerX - 10;
+            const anglePerSegment = (2 * Math.PI) / options.length;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw border
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 8;
+            ctx.stroke();
+
+            options.forEach((option, index) => {
+                const startAngle = index * anglePerSegment - Math.PI / 2;
+                const endAngle = (index + 1) * anglePerSegment - Math.PI / 2;
+
+                // Draw segment
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.closePath();
+                ctx.fillStyle = colors[index % colors.length];
+                ctx.fill();
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                // Draw text
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(startAngle + anglePerSegment / 2);
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 16px sans-serif';
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+                ctx.shadowBlur = 4;
+                ctx.shadowOffsetX = 1;
+                ctx.shadowOffsetY = 1;
+                
+                const text = option.length > 20 ? option.substring(0, 17) + '...' : option;
+                ctx.fillText(text, radius / 2, 0);
+                ctx.restore();
+            });
+        }
+
+        // Update options
+        function updateOptions() {
+            const input = optionsInput.value.trim();
+            if (input === '') {
+                options = [];
+                drawWheel();
+                return;
+            }
+
+            options = input.split(',').map(opt => opt.trim()).filter(opt => opt.length > 0);
+            drawWheel();
+        }
+
+        // Spin wheel
+        function spinWheel() {
+            if (isSpinning || options.length === 0) return;
+
+            isSpinning = true;
+            spinButton.disabled = true;
+            result.classList.remove('show');
+
+            // Calculate random result
+            const randomIndex = Math.floor(Math.random() * options.length);
+            const anglePerSegment = 360 / options.length;
+            
+            // Calculate the angle where the pointer will point (top is -90 degrees)
+            // We want the segment to be at the top, so we need to rotate so that
+            // the center of the selected segment points to -90 degrees (top)
+            const segmentCenterAngle = randomIndex * anglePerSegment;
+            const targetRotation = 90 - segmentCenterAngle + anglePerSegment / 2;
+            
+            // Add multiple full rotations for visual effect
+            const fullRotations = 5;
+            currentRotation += fullRotations * 360 + targetRotation;
+            
+            // Apply rotation
+            wheelWrapper.style.transform = `rotate(${currentRotation}deg)`;
+
+            // Show result after animation
+            setTimeout(() => {
+                resultText.textContent = options[randomIndex];
+                result.classList.add('show');
+                isSpinning = false;
+                spinButton.disabled = false;
+            }, 4000);
+        }
+
+        // Event listeners
+        optionsInput.addEventListener('input', updateOptions);
+        spinButton.addEventListener('click', spinWheel);
+        optionsInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !isSpinning) {
+                spinWheel();
+            }
+        });
+
+        // Initialize
+        updateOptions();
+    </script>
 </body>
 </html>
